@@ -3,7 +3,7 @@ class Spree::Review < ActiveRecord::Base
   belongs_to :user, class_name: Spree.user_class.to_s
   has_many   :feedback_reviews
 
-  after_save :recalculate_product_rating, if: :approved?
+  after_save :recalculate_product_rating, if: :should_recalculate_rating?
   after_destroy :recalculate_product_rating
 
   validates :name, :review, presence: true
@@ -31,5 +31,11 @@ class Spree::Review < ActiveRecord::Base
 
   def recalculate_product_rating
     product.recalculate_rating if product.present?
+  end
+
+  private
+
+  def should_recalculate_rating?
+    SpreeReviews::Config[:include_unapproved_reviews] == true || approved?
   end
 end
